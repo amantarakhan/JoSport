@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "588951193550",
+    "project_id": "josport-f091e",
+    "storage_bucket": "josport-f091e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:588951193550:android:32e94f3ffa108028e18d9f",
+        "android_client_info": {
+          "package_name": "com.josport.app.josport"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLxVA-LWtgY4F17xgtgPPc7nLBFRGPEGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

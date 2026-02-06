@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
+
+
+//Calls auth_service functions
+// Stores user data
+// Shows loading spinner
+// Handles errors
+
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
 

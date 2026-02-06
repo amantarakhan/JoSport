@@ -21,7 +21,7 @@ class AuthService {
     return null;
   }
 
-  // Email & Password Registration
+  // Email & Password Registration - sign in
   Future<UserModel> register({
     required String email,
     required String password,
@@ -35,9 +35,13 @@ class AuthService {
 
       // Update display name
       await userCredential.user?.updateDisplayName(name);
+
+      // IMPORTANT: Reload to get updated user data
       await userCredential.user?.reload();
 
-      final user = _auth.currentUser;
+      // Get fresh user instance after reload
+      final User? user = _auth.currentUser;
+
       if (user == null) {
         throw Exception('User creation failed');
       }
@@ -50,7 +54,7 @@ class AuthService {
     }
   }
 
-  // Email & Password Login
+  // Email & Password Login - login
   Future<UserModel> login({
     required String email,
     required String password,
@@ -73,9 +77,12 @@ class AuthService {
     }
   }
 
-  // Google Sign In
+  // Google Sign In - sign up using the google account
   Future<UserModel> signInWithGoogle() async {
     try {
+      // Sign out first to ensure account picker shows up
+      await _googleSignIn.signOut();
+
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
@@ -84,8 +91,7 @@ class AuthService {
       }
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-      await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       // Create a new credential
       final credential = GoogleAuthProvider.credential(
@@ -103,17 +109,18 @@ class AuthService {
       return UserModel.fromFirebaseUser(userCredential.user!);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
+    } on Exception catch (e) {
+      // Handle Google Sign In specific errors
+      if (e.toString().contains('PigeonUserDetails')) {
+        throw Exception('Google sign in error. Please update your Google Play Services.');
+      }
+      throw Exception('Google sign in failed: ${e.toString()}');
     } catch (e) {
       throw Exception('Google sign in failed: ${e.toString()}');
     }
   }
 
-  // Apple Sign In (iOS only - optional for now)
-  // Future<UserModel> signInWithApple() async {
-  //   // Implementation for Apple Sign In
-  // }
-
-  // Password Reset
+  // Password Reset - forget pass -> send email to the email
   Future<void> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
@@ -155,6 +162,8 @@ class AuthService {
         return 'Too many attempts. Please try again later.';
       case 'operation-not-allowed':
         return 'This sign-in method is not enabled.';
+      case 'invalid-credential':
+        return 'The credentials provided are invalid.';
       default:
         return 'Authentication error: ${e.message ?? 'Unknown error'}';
     }
