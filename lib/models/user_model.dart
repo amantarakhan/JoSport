@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+
 class UserModel {
   final String uid;
   final String email;
   final String? displayName;
+
+  /// We store it as `photoUrl` in our model + firestore
   final String? photoUrl;
+
   final List<String>? followedTeams;
   final bool isProMember;
 
@@ -15,17 +20,25 @@ class UserModel {
     this.isProMember = false,
   });
 
-  // Create UserModel from Firebase User
-  factory UserModel.fromFirebaseUser(dynamic firebaseUser) {
-    return UserModel(
-      uid: firebaseUser.uid,
-      email: firebaseUser.email ?? '',
-      displayName: firebaseUser.displayName,
-      photoUrl: firebaseUser.photoURL,
-    );
+  /// ✅ Compatibility getter in case any code uses photoURL naming
+  String? get photoURL => photoUrl;
+
+  /// ✅ Works if you pass Firebase User OR already a UserModel
+  factory UserModel.fromFirebaseUser(dynamic u) {
+    if (u is UserModel) return u;
+
+    if (u is User) {
+      return UserModel(
+        uid: u.uid,
+        email: u.email ?? '',
+        displayName: u.displayName,
+        photoUrl: u.photoURL,
+      );
+    }
+
+    throw ArgumentError('Unsupported user type: ${u.runtimeType}');
   }
 
-  // Convert to JSON for Firestore
   Map<String, dynamic> toJson() {
     return {
       'uid': uid,
@@ -37,21 +50,17 @@ class UserModel {
     };
   }
 
-  // Create from Firestore document
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      uid: json['uid'] ?? '',
-      email: json['email'] ?? '',
-      displayName: json['displayName'],
-      photoUrl: json['photoUrl'],
-      followedTeams: json['followedTeams'] != null
-          ? List<String>.from(json['followedTeams'])
-          : null,
-      isProMember: json['isProMember'] ?? false,
+      uid: (json['uid'] ?? '') as String,
+      email: (json['email'] ?? '') as String,
+      displayName: json['displayName'] as String?,
+      photoUrl: json['photoUrl'] as String?,
+      followedTeams: (json['followedTeams'] as List?)?.map((e) => e.toString()).toList(),
+      isProMember: (json['isProMember'] ?? false) as bool,
     );
   }
 
-  // Copy with method for updating user data
   UserModel copyWith({
     String? uid,
     String? email,

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '/providers/user_provider.dart';
 import '/config/theme/app_colors.dart';
 import '/config/theme/text_styles.dart';
 import '/widgets/common/custom_button.dart';
 import '/widgets/common/custom_text_field.dart';
 import '/providers/auth_provider.dart';
-import '../home_screen.dart';
+import '/models/user_model.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -43,11 +44,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
 
       if (success) {
-        // Navigate to home screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        // Get the current user from AuthProvider
+        final currentUser = authProvider.user;
+
+        if (currentUser != null) {
+          // Create UserModel from Firebase User
+          final userModel = UserModel.fromFirebaseUser(currentUser);
+
+          // Set user in UserProvider
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          userProvider.setUser(userModel);
+        }
+
+        // Navigate to home screen (main navigation)
+        Navigator.of(context).pushReplacementNamed('/home');
       } else {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,11 +78,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!mounted) return;
 
     if (success) {
-      // Navigate to home screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      // Get the current user from AuthProvider
+      final currentUser = authProvider.user;
+
+      if (currentUser != null) {
+        // Create UserModel from Firebase User
+        final userModel = UserModel.fromFirebaseUser(currentUser);
+
+        // Set user in UserProvider
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(userModel);
+      }
+
+      // Navigate to home screen (main navigation)
+      Navigator.of(context).pushReplacementNamed('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
